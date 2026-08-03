@@ -22,7 +22,7 @@ export default function JourneyTypeCard({ onSelect }: JourneyTypeCardProps) {
             type="button"
             disabled={!o.enabled}
             onClick={() => onSelect(o.type)}
-            className="text-left px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] disabled:opacity-50 disabled:hover:bg-white"
+            className="text-left px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring disabled:opacity-50 disabled:hover:bg-white"
           >
             {o.label}
             {!o.enabled && (

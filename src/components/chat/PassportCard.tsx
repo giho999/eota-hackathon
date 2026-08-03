@@ -15,14 +15,14 @@ export default function PassportCard({ onSelect }: PassportCardProps) {
         <button
           type="button"
           onClick={() => onSelect('domestic')}
-          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
         >
           내국인
         </button>
         <button
           type="button"
           onClick={() => onSelect('foreign')}
-          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
         >
           외국인
         </button>

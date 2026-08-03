@@ -380,7 +380,7 @@ export default function Home() {
 
         {/* Phase 7: 지연 알림 배너 — 10%p 이상 하락 시에만 */}
         {alertMsg && (
-          <div className="bg-[#B3271E] text-white rounded-[12px] px-5 py-3 text-sm font-medium">
+          <div className="animate-toast-in bg-[#B3271E] text-white rounded-[12px] px-5 py-3 text-sm font-medium">
             {alertMsg}
           </div>
         )}

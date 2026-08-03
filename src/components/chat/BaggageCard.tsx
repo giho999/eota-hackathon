@@ -15,14 +15,14 @@ export default function BaggageCard({ onSelect }: BaggageCardProps) {
         <button
           type="button"
           onClick={() => onSelect(true)}
-          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
         >
           위탁 수하물 있음
         </button>
         <button
           type="button"
           onClick={() => onSelect(false)}
-          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
         >
           기내 수하물만
         </button>

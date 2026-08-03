@@ -41,7 +41,7 @@ export default function DepartureStationCard({ onSelect }: DepartureStationCardP
                 setPicked(station);
                 onSelect(station);
               }}
-              className="text-left px-4 py-2 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] hover:bg-[#E9F0FA]"
+              className="text-left px-4 py-2 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] hover:bg-[#E9F0FA] btn-spring"
             >
               {key} → <span className="font-medium">{station}</span>
             </button>

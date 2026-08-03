@@ -27,7 +27,7 @@ export default function RouteCard({ onSelect }: RouteCardProps) {
             key={s}
             type="button"
             onClick={() => setFrom(s)}
-            className={`px-3 py-2 rounded-[12px] border text-sm ${
+            className={`px-3 py-2 rounded-[12px] border text-sm btn-spring ${
               from === s
                 ? 'border-[#1E63B8] bg-[#E9F0FA] text-[#10315C] font-medium'
                 : 'border-[#DCE2EA] bg-white text-[#1A1D23] hover:bg-[#E9F0FA]'
@@ -45,7 +45,7 @@ export default function RouteCard({ onSelect }: RouteCardProps) {
             key={s}
             type="button"
             onClick={() => setTo(s)}
-            className={`px-3 py-2 rounded-[12px] border text-sm ${
+            className={`px-3 py-2 rounded-[12px] border text-sm btn-spring ${
               to === s
                 ? 'border-[#1E63B8] bg-[#E9F0FA] text-[#10315C] font-medium'
                 : 'border-[#DCE2EA] bg-white text-[#1A1D23] hover:bg-[#E9F0FA]'
@@ -60,7 +60,7 @@ export default function RouteCard({ onSelect }: RouteCardProps) {
         <button
           type="button"
           onClick={() => onSelect({ from, to })}
-          className="mt-4 w-full px-4 py-3 bg-[#1E63B8] text-white rounded-[12px] font-medium"
+          className="mt-4 w-full px-4 py-3 bg-[#1E63B8] text-white rounded-[12px] font-medium btn-spring"
         >
           {from} → {to} 확인
         </button>

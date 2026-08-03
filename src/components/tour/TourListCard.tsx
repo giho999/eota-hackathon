@@ -19,7 +19,7 @@ const CATEGORY_LABEL: Record<TourCategory, string> = {
 /** §9 코스 목록: 분해 + 예산 대비 소진 막대. */
 export default function TourListCard({ courses, remainingMin, category }: TourListCardProps) {
   return (
-    <div className="bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
+    <div className="animate-rise bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
       <h2 className="font-bold text-[#1A1D23] mb-1">{CATEGORY_LABEL[category]} 코스 추천</h2>
       <p className="text-sm text-[#6B7482] mb-4">대기 시간 {remainingMin}분 중 {courses.length}곳 추천</p>
       <ul className="flex flex-col gap-3">

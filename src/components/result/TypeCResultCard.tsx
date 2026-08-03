@@ -3,9 +3,15 @@
 import { useState } from 'react';
 import type { TypeCScenario } from '@/lib/chat/result';
 import { recommendTrainC } from '@/lib/chat/result';
+import { useCountUp } from '@/lib/useCountUp';
 import ProbabilityBar from './ProbabilityBar';
 import Timeline from './Timeline';
 import Histogram from './Histogram';
+
+/** 토스 잔액 카운트업 느낌의 확률 숫자 */
+function CountUpPct({ value }: { value: number }) {
+  return <>{useCountUp(value)}%</>;
+}
 
 interface TypeCResultCardProps {
   scenario: TypeCScenario;
@@ -29,7 +35,7 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin }
   if (!selected) return null;
 
   return (
-    <div className="bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
+    <div className="animate-rise bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
       <h2 className="font-bold text-[#1A1D23] mb-1">열차 탑승 성공 확률</h2>
       <p className="text-sm text-[#6B7482] mb-4">
         {route.from} → {route.to} · {fmt(wishTimeMin)} 출발 희망
@@ -38,7 +44,7 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin }
       {recommended ? (
         <p className="mb-4 text-[#1A1D23]">
           <span className="text-3xl font-bold text-[#10315C]">
-            {Math.round(recommended.result.probability * 100)}%
+            <CountUpPct value={Math.round(recommended.result.probability * 100)} />
           </span>
           <span className="ml-2 text-sm text-[#6B7482]">
             추천 {recommended.train.trainNo} ({fmt(recommended.train.departureMin)} 출발)
@@ -62,7 +68,7 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin }
                   setSelectedTrainNo(t.trainNo);
                   setExpanded(true);
                 }}
-                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors ${
+                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors btn-spring ${
                   isSelected ? 'bg-[#E9F0FA]' : 'hover:bg-[#E9F0FA]'
                 }`}
               >

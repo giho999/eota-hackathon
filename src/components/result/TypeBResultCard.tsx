@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { TypeBScenario, TrainResult } from '@/lib/chat/result';
 import { recommendTrainB } from '@/lib/chat/result';
+import { useCountUp } from '@/lib/useCountUp';
 import ProbabilityBar from './ProbabilityBar';
 import Timeline from './Timeline';
 import Histogram from './Histogram';
@@ -38,9 +39,12 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
 
   const activeCase = selectedTrainNo ? city : bestCity ? city : airport;
   const activeRec = selectedTrainNo ? (selectedCity ?? selected) : bestCity ? cityRec : airportRec;
+  const diffPct = useCountUp(
+    Math.round(cityRec.result.probability * 100) - Math.round(airportRec.result.probability * 100),
+  );
 
   return (
-    <div className="bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
+    <div className="animate-rise bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
       <h2 className="font-bold text-[#1A1D23] mb-1">출국 가능 확률</h2>
       <p className="text-sm text-[#6B7482] mb-4">
         {departureStation} → 인천공항 · 탑승마감 {fmt(deadlineMin)}
@@ -69,7 +73,7 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
       <p className="text-sm text-[#1A1D23] mb-3">
         도심공항터미널을 이용하면{' '}
         <span className="font-bold text-[#10315C]">
-          {Math.round(cityRec.result.probability * 100) - Math.round(airportRec.result.probability * 100)}%p
+          {diffPct}%p
         </span>{' '}
         더 안정적으로 탑승할 수 있어요.
       </p>
@@ -89,7 +93,7 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
                   setSelectedTrainNo(t.trainNo);
                   setExpanded(true);
                 }}
-                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors ${
+                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors btn-spring ${
                   isSelected ? 'bg-[#E9F0FA]' : 'hover:bg-[#E9F0FA]'
                 }`}
               >

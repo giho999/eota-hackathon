@@ -32,7 +32,7 @@ export default function BufferCard({ estimateMinutes, onSelect, variant = 'arriv
             key={o.value}
             type="button"
             onClick={() => onSelect(o.value)}
-            className="px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+            className="px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
           >
             {o.label}
           </button>

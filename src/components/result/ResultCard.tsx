@@ -57,7 +57,7 @@ export default function ResultCard({
         ];
 
   return (
-    <div className="bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
+    <div className="animate-rise bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
       <div className="flex items-center justify-between gap-2 mb-4">
         <h2 className="font-bold text-[#1A1D23]">열차 탑승 성공 확률</h2>
         <button
@@ -92,7 +92,7 @@ export default function ResultCard({
               key={label}
               type="button"
               onClick={() => pickTrain(tr.train.trainNo)}
-              className={`text-left rounded-[12px] border px-4 py-3 transition-colors ${borderCls}`}
+              className={`text-left rounded-[12px] border px-4 py-3 transition-colors btn-spring ${borderCls}`}
             >
               <p className={`text-xs font-medium ${low ? 'text-[#6B7482]' : 'text-[#10315C]'}`}>
                 {displayLabel}
@@ -102,6 +102,7 @@ export default function ResultCard({
                 <span className="text-xs font-normal text-[#6B7482]">
                   ({fmt(tr.train.departureMin)} 출발)
                 </span>
+                {isSelected && <span className="inline-block ml-1 animate-pop">✓</span>}
               </p>
               <ProbabilityBar probability={tr.result.probability} />
             </button>
@@ -138,7 +139,7 @@ export default function ResultCard({
               <button
                 type="button"
                 onClick={() => pickTrain(t.trainNo)}
-                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors ${
+                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors btn-spring ${
                   isSelected ? 'bg-[#E9F0FA]' : 'hover:bg-[#E9F0FA]'
                 }`}
               >

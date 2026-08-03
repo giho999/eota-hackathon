@@ -40,7 +40,7 @@ export default function WishTimeCard({ onSelect }: WishTimeCardProps) {
             key={p.offset}
             type="button"
             onClick={() => pick(Math.floor(Date.now() / 60000) + p.offset)}
-            className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+            className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
           >
             {p.label}
           </button>

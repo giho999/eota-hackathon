@@ -18,14 +18,14 @@ export default function CityTerminalCard({ onSelect }: CityTerminalCardProps) {
         <button
           type="button"
           onClick={() => onSelect(true)}
-          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
         >
           네, 미리 할게요
         </button>
         <button
           type="button"
           onClick={() => onSelect(false)}
-          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+          className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
         >
           아니요, 공항에서 할게요
         </button>

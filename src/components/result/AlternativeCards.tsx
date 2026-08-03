@@ -63,7 +63,7 @@ export default function AlternativeCards({ scenarios, onSelect }: AlternativeCar
           type="button"
           disabled={!c.target}
           onClick={() => c.target && onSelect(c.target)}
-          className="text-left bg-white border border-[#DCE2EA] rounded-[12px] px-4 py-3 hover:bg-[#E9F0FA] disabled:opacity-50 disabled:hover:bg-white"
+          className="text-left bg-white border border-[#DCE2EA] rounded-[12px] px-4 py-3 hover:bg-[#E9F0FA] disabled:opacity-50 disabled:hover:bg-white btn-spring"
         >
           <div className="flex items-baseline justify-between gap-2">
             <span className="font-medium text-[#1A1D23]">

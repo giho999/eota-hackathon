@@ -64,7 +64,7 @@ export default function FlightCard({ onConfirmed, direction = 'arr' }: FlightCar
           type="button"
           onClick={lookup}
           disabled={loading}
-          className="px-4 py-2 bg-[#1E63B8] text-white rounded-[12px] font-medium disabled:opacity-50"
+          className="px-4 py-2 bg-[#1E63B8] text-white rounded-[12px] font-medium disabled:opacity-50 btn-spring"
         >
           {loading ? '확인 중…' : '확인'}
         </button>
@@ -83,7 +83,7 @@ export default function FlightCard({ onConfirmed, direction = 'arr' }: FlightCar
           <button
             type="button"
             onClick={() => onConfirmed(info)}
-            className="mt-2 w-full px-4 py-2 bg-[#1E63B8] text-white rounded-[12px] font-medium"
+            className="mt-2 w-full px-4 py-2 bg-[#1E63B8] text-white rounded-[12px] font-medium btn-spring"
           >
             맞아요, 이 항공편이에요
           </button>
