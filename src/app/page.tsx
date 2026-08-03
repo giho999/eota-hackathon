@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import Header from '@/components/chat/Header';
 import JourneyTypeCard from '@/components/chat/JourneyTypeCard';
 import FlightCard from '@/components/chat/FlightCard';
@@ -38,6 +39,7 @@ export default function Home() {
   // 관광 상태 (§9) — 항상 추천 열차 기준. 어느 열차인지 표시용 번호 함께 저장.
   const [tourSlackMin, setTourSlackMin] = useState(0);
   const [tourRecTrainNo, setTourRecTrainNo] = useState<string | null>(null);
+  const [tourStation, setTourStation] = useState<string>('서울역'); // 지도 중심용 관광 기준역
   const [interest, setInterest] = useState<TourCategory | null>(null);
   const [tourCourses, setTourCourses] = useState<BudgetedCourse[]>([]);
   // Phase 7: 지연 시뮬레이션 알림
@@ -89,6 +91,7 @@ export default function Home() {
     const spots = (await res.json()) as TourSpot[];
     const courses = fitCourses(spots.filter((s) => s.category === category), tourSlackMin);
     setTourCourses(courses);
+    setTourStation(station);
   }
 
   // 결과 확정 시 여유 시간 계산 + 관광 리셋 (재계산 연동 §9-6)
@@ -324,6 +327,9 @@ export default function Home() {
             항공·철도 실시간 데이터로 <span className="font-semibold">열차 탑승 성공 확률</span>을
             알려드릴게요. 질문에 답하면 바로 계산해요.
           </p>
+          <Link href="/lookup" className="mt-3 inline-block text-xs bg-white/15 rounded-full px-3 py-1.5 hover:bg-white/25">
+            ⚡ 실시간 조회 바로가기
+          </Link>
         </div>
 
         {cards.length > 0 && (
@@ -436,7 +442,12 @@ export default function Home() {
           <InterestCard slackMin={tourSlackMin} recTrainNo={tourRecTrainNo ?? '추천 열차'} onSelect={pickInterest} />
         )}
         {hasResult && interest && tourCourses.length > 0 && (
-          <TourListCard courses={tourCourses} remainingMin={tourSlackMin} category={interest} />
+          <TourListCard
+            courses={tourCourses}
+            remainingMin={tourSlackMin}
+            category={interest}
+            station={tourStation}
+          />
         )}
         {hasResult && interest && tourCourses.length === 0 && (
           <p className="text-sm text-[#B0730A]">

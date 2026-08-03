@@ -40,12 +40,14 @@ export interface CongestionAdapter {
 /** 관광지 카테고리 (§9 관심사 질문용) */
 export type TourCategory = 'cafe' | 'history' | 'nature';
 
-/** 관광지. walkMin=역에서 도보, stayMin=머무름 시간 (§9). */
+/** 관광지. walkMin=역에서 도보, stayMin=머무름 시간 (§9). lat/lng는 지도 마커용(선택). */
 export interface TourSpot {
   name: string;
   category: TourCategory;
   walkMin: number;
   stayMin: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface TourAdapter {
