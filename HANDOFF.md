@@ -2,7 +2,7 @@
 
 > **용도**: 새 세션(에이전트/개발자)에서 이 프로젝트를 이어받을 때 이 문서를 먼저 읽고 진행한다.
 > 프로젝트 루트: `/Users/leegiho/Lee/대외활동/내일로해커톤 2026/code`
-> 최종 커밋: `8964351` (Phase 0~8 배포 준비까지 전체 구현)
+> 최종 커밋: `20b422e` (관광 추천 기준을 선택 열차로 갱신 + 토스 모션 + Vercel 배포 완료)
 
 ---
 
@@ -164,22 +164,38 @@ scripts/collect-delays.ts         # 소급 수집 + 노선별 gamma 적합 (--st
 9. **유형 B 추천**: `recommendTrainB`는 **가장 늦은 열차** (유형 A `recommendTrain`과 반대). 헷갈리지 말 것.
 10. **dev 서버 hang**: 파일 수정 후 첫 요청이 느린 것은 정상(컴파일). 진짜 hang이면 구버전 프로세스 — `pkill -9 -f next` 후 재기동.
     이전에 live API가 실제로 불통인 걸 hang으로 오인한 사례 있음. 라이브 엔드포인트는 반드시 curl로 probe.
+11. **토스 스타일 스프링 모션** (커밋 `dd029cb`): 새 라이브러리 없이 Tailwind/CSS만.
+    - `globals.css`: `cubic-bezier(0.34,1.56,0.64,1)` 스프링 이징 + `animate-rise`(카드 슬라이드업),
+      `animate-toast-in`(알림 배너), `animate-bar-fill`(막대 채움), `animate-pop`(선택 바운스), `btn-spring`(탄성 버튼) 유틸리티.
+    - `lib/useCountUp.ts`: rAF 기반 0→값 카운트업 훅 (easeOutCubic, 기본 500ms).
+    - `ProbabilityBar`: 숫자 카운트업 + 막대 채움 동시 애니메이션.
+    - `ResultCard`/`TypeB`/`TypeC`: %p 차이·큰 확률 숫자 카운트업, 카드 컨테이너에 `animate-rise`.
+    - 모든 선택 버튼에 `btn-spring` (active:scale-95 → 스프링 복귀), 선택 카드에 ✓ + `animate-pop`.
+12. **관광 추천 기준이 추천 열차에 고정되던 버그** (커밋 `20b422e`):
+    - **상황**: 결과 화면에서 추천 열차(예: KTX-1103) 기준으로 관광 카드가 뜬 뒤, 사용자가
+      목록에서 **다른 열차(예: KTX-1104)를 직접 클릭해도** 관광 카드가 처음 추천된 열차 기준으로 남아 있었다.
+      (여유 시간·추천 열차 번호·승차역 반경 모두 KTX-1103 기준 고정 — "추천 열차(KTX-1103) 기준, 65분"이 KTX-1104 클릭 후에도 안 바뀜)
+    - **원인**: `finalizeSlack`(관광 기준 설정)이 recompute 시 **추천 열차 기준으로만** 호출되고,
+      사용자의 열차 선택(pickTrain)은 관광 상태를 건드리지 않았다.
+    - **수정**: `ResultCard`에 `onSelectTrain(trainNo)` 콜백 추가 → `page.tsx`의 `handleSelectTrain`이
+      선택 열차의 `slackOf`(여유)를 계산해 `finalizeSlack`으로 관광 기준 갱신(관심사/코스 리셋).
+      `pickInterest`는 유형 A에서 **선택 열차(tourRecTrainNo)의 승차역(from) 우선**, 없으면 추천 열차 사용.
+    - **검증**: KTX-1103(65분) → KTX-1104 클릭 → "추천 열차(KTX-1104) 기준, 90분"으로 갱신,
+      카페 코스도 90분 예산(85분 중 50·30분 사용)으로 재계산됨.
 
 ---
 
-## 9. 배포 (Phase 8 — 미완, 인증 대기 중)
+## 9. 배포 (Phase 8 — 완료)
 
-**완료된 것**:
-- 캐시 경로 안전화 (os.tmpdir 기반, I/O try/catch 폴백) ✓
-- 캐시 삭제 후 build && start 검증 ✓ (mock/라이브 200)
-- git init + 커밋 (`8964351`) — `.env*`/`.omo`/`.playwright-mcp`/PNG 제외 확인 ✓
-
-**남은 것 (인증 필요)**:
-1. `npx vercel login` (인터랙티브) 또는 `VERCEL_TOKEN` 환경변수 제공 후 `npx vercel --prod`
-   - 현재 Vercel CLI 설치됨(58.4.4) / GitHub CLI 설치됨(gh) / **둘 다 로그인 안 됨**
-2. Vercel 대시보드에 `DATA_GO_KR_KEY` Production/Preview 환경변수 등록
-3. 배포 후 회귀 테스트: 유형 A/B/C 클릭 관통 + 라이브 항공편 + **375px 모바일 뷰 레이아웃 확인**
-4. 배포 URL QR 코드 생성 → README에 삽입 (데모 부스용)
+**배포 상태**:
+- Vercel 배포 **완료** — Production URL: **https://eota-pi.vercel.app** (별칭)
+  (고유 URL: `https://code-jg4kense8-giho1.vercel.app`, 이전 별칭 `https://code-seven-blush.vercel.app`도 살아있음)
+- `DATA_GO_KR_KEY` → **Production** 환경변수 등록 완료 (Sensitive)
+  - Preview 등록은 CLI 비대화형에서 Git branch 프롬프트가 막혀 보류 — GitHub 연동 시 `vercel env add DATA_GO_KR_KEY preview` 필요
+- **라이브 API 배포 환경에서 실제 동작 확인됨**: mock(KE1234) 200, 라이브(KE647 출국편) 200 —
+  Vercel 서버리스에서 `os.tmpdir()` 캐시 + mock 폴백 모두 정상
+- **QR코드 생성 완료**: `eota-qr.png` → `README.md`에 삽입 (데모 부스 스캔용)
+- 배포 후 회귀 테스트 완료: 유형 A/B/C 클릭 관통 + 375px 모바일 뷰 레이아웃 정상
 
 ---
 
@@ -188,7 +204,7 @@ scripts/collect-delays.ts         # 소급 수집 + 노선별 gamma 적합 (--st
 - **금지 사항** (AGENTS.md §2): DB/ORM/Docker/인증 금지, 상태관리 라이브러리 금지, 결제·예매 금지,
   API 키 없어도 mock으로 동작해야 함, shadcn/ui 대량 설치 금지, ML 라이브러리 금지.
 - **확률 엔진**: 분포 적합 + 몬테카를로만. 설명 가능성이 최우선.
-- 시연 범위는 **대전역 반경** (관광). 다른 역은 `STATION_COORDS`에 좌표 추가로 확장 가능.
+- 관광 시연 범위는 **대기 장소(서울역/광명역) 반경** (추천 열차 승차역 기준). 다른 역은 `STATION_COORDS`에 좌표 추가로 확장 가능.
 - **fable 게이트**: `~/.claude/.fable-state`가 `off` 상태 (사용자가 직접 구현 모드로 전환).
   게이트가 다시 켜지면(`on`) 코드 직접 수정이 턴당 2파일로 제한됨 — 위임 전환 필요.
   서브에이전트(백그라운드)는 이전에 hang 이력이 있어, 복잡하면 동기 실행 권장.
@@ -198,8 +214,7 @@ scripts/collect-delays.ts         # 소급 수집 + 노선별 gamma 적합 (--st
 
 ## 11. 남은 작업 후보 (우선순위순)
 
-1. **Vercel 배포 완료** (인증 → env 등록 → 회귀 테스트 → QR)
-2. `prior-only` 모수 추정값 배지 (완료 기준 미충족)
-3. 유형 B 관광 시: 출발역 기준 코스 (현재는 station 로직 공유, 검증 필요)
-4. `LiveTourAdapter` 실데이터 검증 (키 있으면 실제 관광지 반환 확인)
-5. README 작성 (QR 포함, AGENTS.md §11 Phase 8)
+1. `prior-only` 모수 추정값 배지 (완료 기준 미충족)
+2. 유형 B 관광 시: 출발역 기준 코스 (현재는 station 로직 공유, 검증 필요)
+3. `LiveTourAdapter` 실데이터 검증 (키 있으면 실제 관광지 반환 확인)
+4. README(배포 URL + QR 포함) — **이미 작성됨** (`README.md`, `eota-qr.png` 커밋됨). 내용 보강 여부만 남음.
