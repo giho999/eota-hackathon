@@ -16,6 +16,8 @@ interface ResultCardProps {
   baseTimeMin: number;
   onSelectScenario: (id: string) => void;
   onToggleBaggage: (checked: boolean) => void;
+  /** 열차 선택 시 호출 — 관광 기준을 선택 열차로 재계산하기 위함 */
+  onSelectTrain?: (trainNo: string) => void;
 }
 
 const fmt = (min: number) =>
@@ -30,6 +32,7 @@ export default function ResultCard({
   baseTimeMin,
   onSelectScenario,
   onToggleBaggage,
+  onSelectTrain,
 }: ResultCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [selectedTrainNo, setSelectedTrainNo] = useState<string | null>(null);
@@ -45,6 +48,7 @@ export default function ResultCard({
   function pickTrain(trainNo: string) {
     setSelectedTrainNo(trainNo);
     setExpanded(true);
+    onSelectTrain?.(trainNo);
   }
 
   const pickCards = safe === null

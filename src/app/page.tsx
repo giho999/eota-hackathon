@@ -68,7 +68,7 @@ export default function Home() {
   }
 
   // 관심사 선택 → tour API 조회 → 시간 예산 필터
-  // 관광 반경은 "대기 장소" 기준: 유형 A/B는 추천 열차의 승차역(from), 유형 B 도심터미널이면 그 역, 유형 C는 출발역
+  // 관광 반경은 "대기 장소" 기준: 유형 A는 선택/추천 열차의 승차역(from), 유형 B는 도심터미널 그 역, 유형 C는 출발역
   async function pickInterest(category: TourCategory) {
     setInterest(category);
     let station = '서울역';
@@ -79,8 +79,11 @@ export default function Home() {
     } else if (isTypeC) {
       station = slots.route?.from ?? '서울역';
     } else {
-      const rec = results && results.length > 0 ? recommendTrain(results[0]) : null;
-      station = rec?.train.from ?? '서울역';  // 추천 KTX 승차역 (서울역/광명역)
+      // 선택된 열차(tourRecTrainNo)가 있으면 그 승차역 우선, 없으면 추천 열차 승차역
+      const active = results && results.length > 0 ? results[0] : null;
+      const picked = active?.trains.find((t) => t.train.trainNo === tourRecTrainNo);
+      const rec = active ? (picked ?? recommendTrain(active)) : null;
+      station = rec?.train.from ?? '서울역';  // KTX 승차역 (서울역/광명역)
     }
     const res = await fetch(`/api/tour?station=${encodeURIComponent(station)}&radius=15`);
     const spots = (await res.json()) as TourSpot[];
@@ -95,6 +98,14 @@ export default function Home() {
     setTourRecTrainNo(recTrainNo ?? null);
     setInterest(null);
     setTourCourses([]);
+  }
+
+  // 사용자가 결과 화면에서 열차를 클릭하면 관광 기준을 그 열차로 갱신
+  // (추천 열차 기준으로 고정된 채 남는 버그 방지 — 선택 열차의 여유/승차역 기준)
+  function handleSelectTrain(trainNo: string) {
+    if (!results || results.length === 0) return;
+    const tr = results[0].trains.find((t) => t.train.trainNo === trainNo);
+    if (tr) finalizeSlack(slackOf(tr), tr.train.trainNo);
   }
 
   // Phase 7: 이전 확률과 비교해 10%p 이상 하락 시에만 알림 (노이즈 방지)
@@ -398,6 +409,7 @@ export default function Home() {
               setBaggageChecked(next);
               await recomputeTypeA(next, bufferTimeMin);
             }}
+            onSelectTrain={handleSelectTrain}
           />
         )}
 
