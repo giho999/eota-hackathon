@@ -1,10 +1,11 @@
 import type { TourAdapter, TourCategory, TourSpot } from '../types';
 import { cachedFetch, serviceKeyParam } from './common';
+import { spotsForStation } from '../tourSpots';
 
 // 한국관광공사 국문 관광정보 서비스 — 위치기반관광정보 (15101578)
 const BASE = 'https://apis.data.go.kr/B551011/KorService1/locationBasedList1';
 
-// 시연 범위: 대기 장소(서울역/광명역) 좌표 (§9). 다른 역은 이 맵에 좌표 추가로 확장.
+// 시연 범위: 대기 장소(서울역/광명역/대전역) 좌표 (§9). 다른 역은 이 맵에 좌표 추가로 확장.
 const STATION_COORDS: Record<string, { mapx: number; mapy: number }> = {
   서울역: { mapx: 126.9726, mapy: 37.5547 },
   광명역: { mapx: 126.8845, mapy: 37.4166 },
@@ -22,22 +23,13 @@ const CONTENT_TYPE_TO_CATEGORY: Record<string, TourCategory> = {
   '32': 'nature',    // 숙박
 };
 
-// 서울역 반경 mock fallback (API 불통 시에도 시연 가능)
-const FALLBACK: TourSpot[] = [
-  { name: '서울역 카페거리', category: 'cafe', walkMin: 5, stayMin: 20 },
-  { name: '명동 카페 골목', category: 'cafe', walkMin: 15, stayMin: 20 },
-  { name: '문화역 서울 284', category: 'history', walkMin: 8, stayMin: 20 },
-  { name: '숭례문', category: 'history', walkMin: 12, stayMin: 15 },
-  { name: '서울역 광장', category: 'nature', walkMin: 4, stayMin: 10 },
-  { name: '남산공원 순환로', category: 'nature', walkMin: 18, stayMin: 25 },
-];
-
 export class LiveTourAdapter implements TourAdapter {
   constructor(private key: string) {}
 
   async nearby(stationCode: string, radiusWalkMin: number): Promise<TourSpot[]> {
     const coord = STATION_COORDS[stationCode];
-    if (!coord) return []; // 좌표 미등록 역: 관광 없음 (§9 시연 범위)
+    // 좌표 미등록 역: 관광 없음 (§9 시연 범위)
+    if (!coord) return spotsForStation(stationCode, radiusWalkMin);
     try {
       const radiusM = Math.max(radiusWalkMin * 80, 500); // 도보 1분 ≈ 80m
       const url =
@@ -52,11 +44,14 @@ export class LiveTourAdapter implements TourAdapter {
           category: CONTENT_TYPE_TO_CATEGORY[String(r.contenttypeid ?? '')] ?? 'history',
           walkMin: Math.max(1, Math.round((Number(r.dist) ?? 0) / 80)),
           stayMin: 20,
+          lat: Number(r.mapy) || undefined,
+          lng: Number(r.mapx) || undefined,
         }))
         .filter((s: TourSpot) => s.name && s.walkMin <= radiusWalkMin);
-      return spots.length ? spots.slice(0, 6) : FALLBACK;
+      // API 결과가 비면 해당 역의 mock 스팟으로 폴백 — 다른 역 데이터를 반환하지 않는다 (§2-4)
+      return spots.length ? spots.slice(0, 6) : spotsForStation(stationCode, radiusWalkMin);
     } catch {
-      return FALLBACK; // API 불통 → mock 폴백 (앱이 죽지 않게 §2-4)
+      return spotsForStation(stationCode, radiusWalkMin);
     }
   }
 }

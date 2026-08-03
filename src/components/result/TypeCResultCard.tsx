@@ -18,13 +18,15 @@ interface TypeCResultCardProps {
   route: { from: string; to: string };
   wishTimeMin: number;
   nowMin: number;  // 유형 C 시뮬레이션 baseTime (타임라인 출발점)
+  /** 열차 선택 시 호출 — 관광 기준을 선택 열차로 재계산하기 위함 */
+  onSelectTrain?: (trainNo: string) => void;
 }
 
 const fmt = (min: number) =>
   new Date(min * 60000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 
 /** 유형 C 결과: 확률 + 열차 목록 + 근거 펼침. */
-export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin }: TypeCResultCardProps) {
+export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin, onSelectTrain }: TypeCResultCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [selectedTrainNo, setSelectedTrainNo] = useState<string | null>(null);
   const recommended = recommendTrainC(scenario);
@@ -67,6 +69,7 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin }
                 onClick={() => {
                   setSelectedTrainNo(t.trainNo);
                   setExpanded(true);
+                  onSelectTrain?.(t.trainNo);
                 }}
                 aria-pressed={isSelected}
                 className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 btn-spring ${

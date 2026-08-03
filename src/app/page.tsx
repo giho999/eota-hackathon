@@ -70,45 +70,54 @@ export default function Home() {
   }
 
   // 관심사 선택 → tour API 조회 → 시간 예산 필터
-  // 관광 반경은 "대기 장소" 기준: 유형 A는 선택/추천 열차의 승차역(from), 유형 B는 도심터미널 그 역, 유형 C는 출발역
+  // 관광 기준역은 finalizeSlack/handleSelectTrain이 설정한 tourStation(대기 장소)을 그대로 사용 —
+  // 지도 라벨과 스팟 조회가 같은 변수를 참조해 기준역 불일치를 원천 차단한다.
   async function pickInterest(category: TourCategory) {
     setInterest(category);
-    let station = '서울역';
-    if (isTypeB) {
-      station = typeBResults
-        ? recommendTrainB(typeBResults[1]).train.from  // 도심공항터미널 case 기준
-        : (slots.departureStation ?? '서울역');
-    } else if (isTypeC) {
-      station = slots.route?.from ?? '서울역';
-    } else {
-      // 선택된 열차(tourRecTrainNo)가 있으면 그 승차역 우선, 없으면 추천 열차 승차역
-      const active = results && results.length > 0 ? results[0] : null;
-      const picked = active?.trains.find((t) => t.train.trainNo === tourRecTrainNo);
-      const rec = active ? (picked ?? recommendTrain(active)) : null;
-      station = rec?.train.from ?? '서울역';  // KTX 승차역 (서울역/광명역)
-    }
+    const station = tourStation;
     const res = await fetch(`/api/tour?station=${encodeURIComponent(station)}&radius=15`);
     const spots = (await res.json()) as TourSpot[];
     const courses = fitCourses(spots.filter((s) => s.category === category), tourSlackMin);
     setTourCourses(courses);
-    setTourStation(station);
   }
 
   // 결과 확정 시 여유 시간 계산 + 관광 리셋 (재계산 연동 §9-6)
-  // 관광은 항상 추천 열차 기준 — 어느 열차인지 번호를 함께 저장해 문구에 표시
-  function finalizeSlack(slackMin: number, recTrainNo?: string | null) {
+  // 관광은 항상 추천/선택 열차 기준 — 어느 열차인지 번호와 기준역(대기 장소)을 함께 저장해
+  // 지도 라벨·중심점과 스팟 조회 station이 항상 같은 변수(tourStation)를 참조하게 한다.
+  function finalizeSlack(slackMin: number, recTrainNo?: string | null, station?: string) {
     setTourSlackMin(slackMin);
     setTourRecTrainNo(recTrainNo ?? null);
+    if (station) setTourStation(station);
     setInterest(null);
     setTourCourses([]);
   }
 
-  // 사용자가 결과 화면에서 열차를 클릭하면 관광 기준을 그 열차로 갱신
-  // (추천 열차 기준으로 고정된 채 남는 버그 방지 — 선택 열차의 여유/승차역 기준)
   function handleSelectTrain(trainNo: string) {
+    if (isTypeC) {
+      const tr = typeCResult?.trains.find((t) => t.train.trainNo === trainNo);
+      if (tr) {
+        finalizeSlack(slackOf(tr), tr.train.trainNo, tr.train.from ?? slots.route?.from ?? '서울역');
+      }
+      return;
+    }
+    if (isTypeB) {
+      const tr = typeBResults?.find((s) => s.trains.some((t) => t.train.trainNo === trainNo))
+        ?.trains.find((t) => t.train.trainNo === trainNo);
+      if (tr) {
+        const deadline = flightInfo?.boardingDeadlineMin ?? (flightInfo ? flightInfo.scheduledArrivalMin - 40 : 0);
+        const last = tr.result.timeline[tr.result.timeline.length - 1]?.cumulativeMin ?? tr.train.departureMin;
+        finalizeSlack(Math.round(deadline - last), tr.train.trainNo, tr.train.from ?? slots.departureStation ?? '서울역');
+      }
+      return;
+    }
     if (!results || results.length === 0) return;
-    const tr = results[0].trains.find((t) => t.train.trainNo === trainNo);
-    if (tr) finalizeSlack(slackOf(tr), tr.train.trainNo);
+    for (const s of results) {
+      const tr = s.trains.find((t) => t.train.trainNo === trainNo);
+      if (tr) {
+        finalizeSlack(slackOf(tr), tr.train.trainNo, tr.train.from ?? '서울역');
+        return;
+      }
+    }
   }
 
   // Phase 7: 이전 확률과 비교해 10%p 이상 하락 시에만 알림 (노이즈 방지)
@@ -185,7 +194,7 @@ export default function Home() {
       const rec = recommendTrain(scenarioResults[0]);
       // 추천 없음(90%+ 미만)이면 최고 확률 열차 기준으로 알림 비교
       const notifyTrain = rec ?? bestTrain(scenarioResults[0]);
-      if (rec) finalizeSlack(slackOf(rec), rec.train.trainNo);
+      if (rec) finalizeSlack(slackOf(rec), rec.train.trainNo, rec.train.from ?? '서울역');
       if (prevPct !== undefined) maybeNotify(prevPct, Math.round(notifyTrain.result.probability * 100));
     } catch {
       setResults(null);
@@ -213,6 +222,7 @@ export default function Home() {
       finalizeSlack(
         Math.round(deadline - (rec.result.timeline[rec.result.timeline.length - 1]?.cumulativeMin ?? rec.train.departureMin)),
         rec.train.trainNo,
+        rec.train.from ?? station,
       );
       if (prevPct !== undefined) maybeNotify(prevPct, Math.round(rec.result.probability * 100));
     } catch {
@@ -232,7 +242,7 @@ export default function Home() {
       const scenario = computeTypeCResults(Math.floor(Date.now() / 60000), options);
       setTypeCResult(scenario);
       const rec = recommendTrainC(scenario);
-      if (rec) finalizeSlack(slackOf(rec), rec.train.trainNo);
+      if (rec) finalizeSlack(slackOf(rec), rec.train.trainNo, rec.train.from ?? route.from);
     } catch {
       setTypeCResult(null);
     } finally {
@@ -424,6 +434,7 @@ export default function Home() {
             scenarios={typeBResults}
             departureStation={slots.departureStation ?? ''}
             deadlineMin={flightInfo.boardingDeadlineMin ?? flightInfo.scheduledArrivalMin - 40}
+            onSelectTrain={handleSelectTrain}
           />
         )}
 
@@ -433,6 +444,7 @@ export default function Home() {
             route={slots.route}
             wishTimeMin={slots.wishTimeMin}
             nowMin={Math.floor(Date.now() / 60000)}
+            onSelectTrain={handleSelectTrain}
           />
         )}
 

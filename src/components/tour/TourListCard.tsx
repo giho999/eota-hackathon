@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import type { TourCategory } from '@/lib/adapters';
 import type { BudgetedCourse } from '@/lib/tour/budget';
 import { budgetUsedRatio } from '@/lib/tour/budget';
@@ -19,7 +18,7 @@ const CATEGORY_LABEL: Record<TourCategory, string> = {
   nature: '자연·공원',
 };
 
-// 역별 지도 중심 좌표 (지도 뷰용)
+// 역별 지도 중심 좌표 (카카오맵 위경도)
 const STATION_CENTER: Record<string, { lat: number; lng: number }> = {
   서울역: { lat: 37.5547, lng: 126.9726 },
   광명역: { lat: 37.4166, lng: 126.8845 },
@@ -27,36 +26,24 @@ const STATION_CENTER: Record<string, { lat: number; lng: number }> = {
   인천공항: { lat: 37.4602, lng: 126.4507 },
 };
 
-/** §9 코스 목록: 분해 + 예산 대비 소진 막대 + 지도 뷰 토글. */
+/** §9 코스 목록: 분해 + 예산 대비 소진 막대 + 지도(상시 표시).
+ *  카카오맵 키가 없으면 지도만 생략되고 리스트는 그대로 보인다. */
 export default function TourListCard({ courses, remainingMin, category, station = '서울역' }: TourListCardProps) {
-  const [showMap, setShowMap] = useState(false);
   const center = STATION_CENTER[station] ?? STATION_CENTER['서울역'];
 
   return (
     <div className="animate-rise bg-white border border-[#DCE2EA] rounded-[12px] px-5 py-4">
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="font-bold text-[#1A1D23]">{CATEGORY_LABEL[category]} 코스 추천</h2>
-        <button
-          type="button"
-          onClick={() => setShowMap((v) => !v)}
-          aria-pressed={showMap}
-          className={`text-xs rounded-full px-3 py-1.5 border-2 btn-spring ${
-            showMap ? 'btn-selected' : 'border-[#DCE2EA] text-[#6B7482] hover:bg-[#E9F0FA]'
-          }`}
-        >
-          {showMap ? '목록으로 보기' : '🗺️ 지도로 보기'}
-        </button>
-      </div>
-      <p className="text-sm text-[#6B7482] mb-4">대기 시간 {remainingMin}분 중 {courses.length}곳 추천</p>
+      <h2 className="font-bold text-[#1A1D23] mb-1">{CATEGORY_LABEL[category]} 코스 추천</h2>
+      <p className="text-sm text-[#6B7482] mb-4">
+        {station} 기준 · 대기 시간 {remainingMin}분 중 {courses.length}곳 추천
+      </p>
 
-      {showMap && (
-        <div className="mb-4">
-          <SpotMap
-            spots={courses.map((c) => c.spot)}
-            center={{ lat: center.lat, lng: center.lng, label: station }}
-          />
-        </div>
-      )}
+      <div className="mb-4">
+        <SpotMap
+          spots={courses.map((c) => c.spot)}
+          center={{ lat: center.lat, lng: center.lng, label: station }}
+        />
+      </div>
 
       <ul className="flex flex-col gap-3">
         {courses.map((c) => {
