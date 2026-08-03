@@ -5,7 +5,7 @@
 
 ## 배포 URL
 
-**https://code-seven-blush.vercel.app**
+**https://eota-pi.vercel.app**
 
 스마트폰으로 바로 접속하려면 QR코드를 스캔하세요:
 
