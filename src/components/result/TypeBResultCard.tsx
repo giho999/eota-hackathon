@@ -52,21 +52,27 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
 
       {/* §4.3 도심공항터미널 비교 카드 */}
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <div className={`rounded-[12px] border px-4 py-3 ${!bestCity ? 'border-[#1E63B8] bg-[#E9F0FA]' : 'border-[#DCE2EA] bg-white'}`}>
+        <div className={`relative rounded-[12px] border-2 px-4 py-3 ${!bestCity ? 'btn-selected animate-micro-bounce' : 'border-[#DCE2EA] bg-white'}`}>
           <p className="text-xs font-medium text-[#10315C]">인천공항에서 체크인</p>
           <p className="font-semibold text-[#1A1D23] mt-0.5">
             {airportRec.train.trainNo}{' '}
             <span className="text-xs font-normal text-[#6B7482]">({fmt(airportRec.train.departureMin)} 출발)</span>
           </p>
           <ProbabilityBar probability={airportRec.result.probability} />
+          {!bestCity && (
+            <span className="absolute right-2 top-2 text-[#1E63B8] font-bold animate-check-in">✓</span>
+          )}
         </div>
-        <div className={`rounded-[12px] border px-4 py-3 ${bestCity ? 'border-[#1E63B8] bg-[#E9F0FA]' : 'border-[#DCE2EA] bg-white'}`}>
+        <div className={`relative rounded-[12px] border-2 px-4 py-3 ${bestCity ? 'btn-selected animate-micro-bounce' : 'border-[#DCE2EA] bg-white'}`}>
           <p className="text-xs font-medium text-[#10315C]">도심공항터미널 사전 체크인</p>
           <p className="font-semibold text-[#1A1D23] mt-0.5">
             {cityRec.train.trainNo}{' '}
             <span className="text-xs font-normal text-[#6B7482]">({fmt(cityRec.train.departureMin)} 출발)</span>
           </p>
           <ProbabilityBar probability={cityRec.result.probability} />
+          {bestCity && (
+            <span className="absolute right-2 top-2 text-[#1E63B8] font-bold animate-check-in">✓</span>
+          )}
         </div>
       </div>
 
@@ -93,8 +99,9 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
                   setSelectedTrainNo(t.trainNo);
                   setExpanded(true);
                 }}
-                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors btn-spring ${
-                  isSelected ? 'bg-[#E9F0FA]' : 'hover:bg-[#E9F0FA]'
+                aria-pressed={isSelected}
+                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 btn-spring ${
+                  isSelected ? 'btn-selected animate-micro-bounce' : 'hover:bg-[#E9F0FA]'
                 }`}
               >
                 <div className="flex items-baseline justify-between mb-1">
@@ -110,6 +117,9 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
                   <span className="text-sm text-[#6B7482]">
                     {fmt(t.departureMin)} → {fmt(t.arrivalMin)}
                   </span>
+                  {isSelected && (
+                    <span className="text-[#1E63B8] text-sm font-bold animate-check-in">✓</span>
+                  )}
                 </div>
                 <ProbabilityBar probability={result.probability} />
               </button>

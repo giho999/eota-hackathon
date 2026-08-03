@@ -1,4 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import Card from './Card';
+import SelectOption from './SelectOption';
 import type { JourneyType } from '@/lib/chat/slots';
 
 interface JourneyTypeCardProps {
@@ -12,23 +16,24 @@ const OPTIONS: { type: JourneyType; label: string; enabled: boolean }[] = [
 ];
 
 export default function JourneyTypeCard({ onSelect }: JourneyTypeCardProps) {
+  const [selected, setSelected] = useState<JourneyType | null>(null);
   return (
     <Card>
       <h2 className="font-bold text-[#1A1D23] mb-3">어떤 여정인가요?</h2>
       <div className="flex flex-col gap-2">
         {OPTIONS.map((o) => (
-          <button
+          <SelectOption
             key={o.type}
-            type="button"
+            selected={selected === o.type}
             disabled={!o.enabled}
-            onClick={() => onSelect(o.type)}
-            className="text-left px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring disabled:opacity-50 disabled:hover:bg-white"
+            onSelect={() => {
+              setSelected(o.type);
+              onSelect(o.type);
+            }}
           >
             {o.label}
-            {!o.enabled && (
-              <span className="ml-2 text-xs text-[#6B7482]">다음 Phase에서 제공</span>
-            )}
-          </button>
+            {!o.enabled && <span className="ml-2 text-xs text-[#6B7482]">다음 Phase에서 제공</span>}
+          </SelectOption>
         ))}
       </div>
     </Card>

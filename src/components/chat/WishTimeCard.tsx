@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Card from './Card';
+import SelectOption from './SelectOption';
 
 interface WishTimeCardProps {
   onSelect: (timeMin: number) => void;
@@ -16,9 +17,11 @@ const PRESETS = [
 /** 유형 C: 출발 희망 시각 선택 (오늘 기준, 프리셋 + 커스텀 시간). */
 export default function WishTimeCard({ onSelect }: WishTimeCardProps) {
   const [custom, setCustom] = useState('');
+  const [picked, setPicked] = useState<string | null>(null);
 
-  function pick(timeMin: number) {
-    onSelect(Math.max(Math.floor(Date.now() / 60000), timeMin));
+  function pick(offset: number, label: string) {
+    setPicked(label);
+    onSelect(Math.max(Math.floor(Date.now() / 60000), Math.floor(Date.now() / 60000) + offset));
   }
 
   function pickCustom() {
@@ -27,7 +30,8 @@ export default function WishTimeCard({ onSelect }: WishTimeCardProps) {
     const now = new Date();
     const target = new Date(now);
     target.setHours(Number(m[1]), Number(m[2]), 0, 0);
-    pick(Math.floor(target.getTime() / 60000));
+    setPicked(custom);
+    onSelect(Math.max(Math.floor(Date.now() / 60000), Math.floor(target.getTime() / 60000)));
   }
 
   return (
@@ -36,14 +40,14 @@ export default function WishTimeCard({ onSelect }: WishTimeCardProps) {
       <p className="text-sm text-[#6B7482] mb-3">그 시각까지 역에 도착할 확률을 계산해요</p>
       <div className="flex gap-2 mb-3">
         {PRESETS.map((p) => (
-          <button
+          <SelectOption
             key={p.offset}
-            type="button"
-            onClick={() => pick(Math.floor(Date.now() / 60000) + p.offset)}
-            className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
+            className="flex-1"
+            selected={picked === p.label}
+            onSelect={() => pick(p.offset, p.label)}
           >
             {p.label}
-          </button>
+          </SelectOption>
         ))}
       </div>
       <div className="flex gap-2">
@@ -57,7 +61,7 @@ export default function WishTimeCard({ onSelect }: WishTimeCardProps) {
           type="button"
           onClick={pickCustom}
           disabled={!custom}
-          className="px-4 py-2 bg-[#1E63B8] text-white rounded-[12px] font-medium disabled:opacity-50"
+          className="px-4 py-2 bg-[#1E63B8] text-white rounded-[12px] font-medium disabled:opacity-50 btn-spring"
         >
           이 시각
         </button>

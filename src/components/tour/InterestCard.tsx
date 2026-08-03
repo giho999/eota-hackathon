@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Card from '../chat/Card';
+import SelectOption from '../chat/SelectOption';
 import type { TourCategory } from '@/lib/adapters';
 
 interface InterestCardProps {
@@ -17,6 +19,7 @@ const CATEGORIES: { value: TourCategory; label: string; emoji: string }[] = [
 
 /** §9: 열차가 정해진 뒤에만 묻는 관심사 카드. 어느 추천 열차 기준인지 명시. */
 export default function InterestCard({ slackMin, recTrainNo, onSelect }: InterestCardProps) {
+  const [selected, setSelected] = useState<TourCategory | null>(null);
   return (
     <Card>
       <h2 className="font-bold text-[#1A1D23] mb-1">
@@ -25,14 +28,17 @@ export default function InterestCard({ slackMin, recTrainNo, onSelect }: Interes
       <p className="text-sm text-[#6B7482] mb-3">무엇을 좋아하세요? 코스를 추천해 드릴게요.</p>
       <div className="flex gap-2">
         {CATEGORIES.map((c) => (
-          <button
+          <SelectOption
             key={c.value}
-            type="button"
-            onClick={() => onSelect(c.value)}
-            className="flex-1 px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA]"
+            className="flex-1"
+            selected={selected === c.value}
+            onSelect={() => {
+              setSelected(c.value);
+              onSelect(c.value);
+            }}
           >
             {c.emoji} {c.label}
-          </button>
+          </SelectOption>
         ))}
       </div>
     </Card>

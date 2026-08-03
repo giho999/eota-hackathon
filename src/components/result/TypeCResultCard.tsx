@@ -68,8 +68,9 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin }
                   setSelectedTrainNo(t.trainNo);
                   setExpanded(true);
                 }}
-                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 transition-colors btn-spring ${
-                  isSelected ? 'bg-[#E9F0FA]' : 'hover:bg-[#E9F0FA]'
+                aria-pressed={isSelected}
+                className={`w-full text-left rounded-[12px] px-2 py-1 -mx-2 btn-spring ${
+                  isSelected ? 'btn-selected animate-micro-bounce' : 'hover:bg-[#E9F0FA]'
                 }`}
               >
                 <div className="flex items-baseline justify-between mb-1">
@@ -85,6 +86,9 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin }
                   <span className="text-sm text-[#6B7482]">
                     {fmt(t.departureMin)} → {fmt(t.arrivalMin)}
                   </span>
+                  {isSelected && (
+                    <span className="text-[#1E63B8] text-sm font-bold animate-check-in">✓</span>
+                  )}
                 </div>
                 <ProbabilityBar probability={result.probability} />
               </button>

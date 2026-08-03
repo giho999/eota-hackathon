@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Card from './Card';
+import SelectOption from './SelectOption';
 
 interface BufferCardProps {
   estimateMinutes: number;
@@ -18,6 +20,7 @@ const OPTIONS = [
 /** 여유 시간. 반드시 마지막 카드. 앞서 예상 소요 시간을 먼저 안내(§7.2).
  *  타이트하게(buffer 0분)는 가장 빠른 열차를 확률 그대로 노출한다. */
 export default function BufferCard({ estimateMinutes, onSelect, variant = 'arrival' }: BufferCardProps) {
+  const [selected, setSelected] = useState<number | null>(null);
   const headline = variant === 'departure' ? '공항 도착 후 출국절차에' : '공항을 빠져나오는 데';
   return (
     <Card>
@@ -28,14 +31,16 @@ export default function BufferCard({ estimateMinutes, onSelect, variant = 'arriv
       </p>
       <div className="grid grid-cols-2 gap-2">
         {OPTIONS.map((o) => (
-          <button
+          <SelectOption
             key={o.value}
-            type="button"
-            onClick={() => onSelect(o.value)}
-            className="px-4 py-3 rounded-[12px] border border-[#DCE2EA] bg-white text-[#1A1D23] font-medium hover:bg-[#E9F0FA] btn-spring"
+            selected={selected === o.value}
+            onSelect={() => {
+              setSelected(o.value);
+              onSelect(o.value);
+            }}
           >
             {o.label}
-          </button>
+          </SelectOption>
         ))}
       </div>
     </Card>
