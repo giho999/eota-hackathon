@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+.cache/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+.env*.local
+.env.local.bak
+.omo/
+.playwright-mcp/
+*.png
