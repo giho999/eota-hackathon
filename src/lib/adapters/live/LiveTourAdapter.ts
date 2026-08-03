@@ -4,9 +4,12 @@ import { cachedFetch, serviceKeyParam } from './common';
 // 한국관광공사 국문 관광정보 서비스 — 위치기반관광정보 (15101578)
 const BASE = 'https://apis.data.go.kr/B551011/KorService1/locationBasedList1';
 
-// 시연 범위: 대전역 좌표 (§9). 다른 역은 이 맵에 좌표 추가로 확장.
+// 시연 범위: 대기 장소(서울역/광명역) 좌표 (§9). 다른 역은 이 맵에 좌표 추가로 확장.
 const STATION_COORDS: Record<string, { mapx: number; mapy: number }> = {
+  서울역: { mapx: 126.9726, mapy: 37.5547 },
+  광명역: { mapx: 126.8845, mapy: 37.4166 },
   대전역: { mapx: 127.4343, mapy: 36.3323 },
+  인천공항: { mapx: 126.4507, mapy: 37.4602 },
 };
 
 // 관광 API 콘텐츠타입 → 카테고리 매핑
@@ -19,14 +22,14 @@ const CONTENT_TYPE_TO_CATEGORY: Record<string, TourCategory> = {
   '32': 'nature',    // 숙박
 };
 
-// 대전역 반경 mock fallback (API 불통 시에도 시연 가능)
+// 서울역 반경 mock fallback (API 불통 시에도 시연 가능)
 const FALLBACK: TourSpot[] = [
-  { name: '성심당 본점', category: 'cafe', walkMin: 7, stayMin: 15 },
-  { name: '대전역 카페거리', category: 'cafe', walkMin: 5, stayMin: 20 },
-  { name: '대전근현대사전시관', category: 'history', walkMin: 12, stayMin: 25 },
-  { name: '옛 충남도청사', category: 'history', walkMin: 10, stayMin: 20 },
-  { name: '중앙로 공원', category: 'nature', walkMin: 6, stayMin: 15 },
-  { name: '보문산 산책로', category: 'nature', walkMin: 15, stayMin: 30 },
+  { name: '서울역 카페거리', category: 'cafe', walkMin: 5, stayMin: 20 },
+  { name: '명동 카페 골목', category: 'cafe', walkMin: 15, stayMin: 20 },
+  { name: '문화역 서울 284', category: 'history', walkMin: 8, stayMin: 20 },
+  { name: '숭례문', category: 'history', walkMin: 12, stayMin: 15 },
+  { name: '서울역 광장', category: 'nature', walkMin: 4, stayMin: 10 },
+  { name: '남산공원 순환로', category: 'nature', walkMin: 18, stayMin: 25 },
 ];
 
 export class LiveTourAdapter implements TourAdapter {

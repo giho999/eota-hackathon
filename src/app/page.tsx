@@ -68,13 +68,20 @@ export default function Home() {
   }
 
   // 관심사 선택 → tour API 조회 → 시간 예산 필터
+  // 관광 반경은 "대기 장소" 기준: 유형 A/B는 추천 열차의 승차역(from), 유형 B 도심터미널이면 그 역, 유형 C는 출발역
   async function pickInterest(category: TourCategory) {
     setInterest(category);
-    const station = isTypeB
-      ? (slots.departureStation ?? '대전역')
-      : isTypeC
-        ? (slots.route?.from ?? '대전역')
-        : (slots.destinationStation ?? '대전역');
+    let station = '서울역';
+    if (isTypeB) {
+      station = typeBResults
+        ? recommendTrainB(typeBResults[1]).train.from  // 도심공항터미널 case 기준
+        : (slots.departureStation ?? '서울역');
+    } else if (isTypeC) {
+      station = slots.route?.from ?? '서울역';
+    } else {
+      const rec = results && results.length > 0 ? recommendTrain(results[0]) : null;
+      station = rec?.train.from ?? '서울역';  // 추천 KTX 승차역 (서울역/광명역)
+    }
     const res = await fetch(`/api/tour?station=${encodeURIComponent(station)}&radius=15`);
     const spots = (await res.json()) as TourSpot[];
     const courses = fitCourses(spots.filter((s) => s.category === category), tourSlackMin);
