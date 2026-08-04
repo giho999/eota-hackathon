@@ -166,6 +166,7 @@ export default function Home() {
       case 'buffer':
         setResults(null);
         setTypeBResults(null);
+        baselinePctRef.current = null; // 여정 재시작: 알림 기준점 리셋
         setSlots((s) => ({ ...s, bufferTimeMin: null }));
         // 여유 시간 질문으로 복귀 시 관광 섹션도 함께 리셋 (질문 단계에선 안 보여야 함)
         setTourSlackMin(0);
@@ -195,7 +196,12 @@ export default function Home() {
       // 추천 없음(90%+ 미만)이면 최고 확률 열차 기준으로 알림 비교
       const notifyTrain = rec ?? bestTrain(scenarioResults[0]);
       if (rec) finalizeSlack(slackOf(rec), rec.train.trainNo, rec.train.from ?? '서울역');
-      if (prevPct !== undefined) maybeNotify(prevPct, Math.round(notifyTrain.result.probability * 100));
+      if (prevPct !== undefined) {
+        maybeNotify(prevPct, Math.round(notifyTrain.result.probability * 100));
+      } else {
+        // 첫 결과: 알림 비교 기준점 고정 (stale 상태 대신 방금 계산한 확률 직접 사용)
+        baselinePctRef.current = Math.round(notifyTrain.result.probability * 100);
+      }
     } catch {
       setResults(null);
     } finally {
@@ -224,7 +230,11 @@ export default function Home() {
         rec.train.trainNo,
         rec.train.from ?? station,
       );
-      if (prevPct !== undefined) maybeNotify(prevPct, Math.round(rec.result.probability * 100));
+      if (prevPct !== undefined) {
+        maybeNotify(prevPct, Math.round(rec.result.probability * 100));
+      } else {
+        baselinePctRef.current = Math.round(rec.result.probability * 100);
+      }
     } catch {
       setTypeBResults(null);
     } finally {
@@ -279,10 +289,15 @@ export default function Home() {
     return rec ? Math.round(rec.result.probability * 100) : null;
   }
 
+  // Phase 7: 알림 비교 기준점 — 첫 결과 도달 시 확률. 이 값 대비 10%p 이상 하락하면 알림.
+  const baselinePctRef = useRef<number | null>(null);
+
   // Phase 7: 지연 발생 시뮬레이션 — 라이브 어댑터를 건드리지 않고 flightInfo 오버라이드 레이어로 재계산
   async function simulateDelay() {
     if (!flightInfo) return;
-    const prevPct = currentRecPct();
+    // 기준점: 첫 결과 도달 시 확률 대비 하락 비교 (직전 상태 대비가 아니므로
+    // 누적 하락이 10%p 이상이면 알림 — 반복 시뮬레이션에도 동작)
+    const prevPct = baselinePctRef.current ?? currentRecPct();
     const addMin = 15 + Math.floor(Math.random() * 11); // +15~25분
     setSimDelay((d) => d + addMin);
     const overridden: FlightInfo = { ...flightInfo, avgDelayMin: flightInfo.avgDelayMin + addMin };
@@ -314,7 +329,7 @@ export default function Home() {
         if (data.avgDelayMin === lastDelayRef.current) return;
         lastDelayRef.current = data.avgDelayMin;
         setFlightInfo(data);
-        const prevPct = currentRecPct();
+        const prevPct = baselinePctRef.current ?? currentRecPct();
         if (isTypeB) {
           await recomputeTypeB(prevPct, data);
         } else {
