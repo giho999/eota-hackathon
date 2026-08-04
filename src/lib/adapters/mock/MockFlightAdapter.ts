@@ -19,18 +19,34 @@ export class MockFlightAdapter implements FlightAdapter {
 
   // 유형 B mock: OZ301 출국편. 지금+3시간 출발, 마감 = 출발−40분.
   async lookupDeparture(flightNo: string, _date?: string): Promise<FlightInfo | null> {
-    if (flightNo.toUpperCase() !== 'OZ301') return null;
-    const departureMin = Math.floor(Date.now() / 60000) + 180;
-    return {
-      flightNo: 'OZ301',
-      airline: '아시아나항공',
-      origin: 'SFO',
-      terminal: 'T1',
-      scheduledArrivalMin: departureMin,
-      avgDelayMin: 5,
-      isDomestic: false,
-      boardingDeadlineMin: departureMin - 40,
-    };
+    if (flightNo.toUpperCase() === 'OZ301') {
+      const departureMin = Math.floor(Date.now() / 60000) + 180;
+      return {
+        flightNo: 'OZ301',
+        airline: '아시아나항공',
+        origin: 'SFO',
+        terminal: 'T1',
+        scheduledArrivalMin: departureMin,
+        avgDelayMin: 5,
+        isDomestic: false,
+        boardingDeadlineMin: departureMin - 40,
+      };
+    }
+    // 유형 B 국내선 mock: KE8001 김포행. isDomestic: true → 여권 카드 생략 + 탑승마감 20분.
+    if (flightNo.toUpperCase() === 'KE8001') {
+      const departureMin = Math.floor(Date.now() / 60000) + 120;
+      return {
+        flightNo: 'KE8001',
+        airline: '대한항공',
+        origin: 'GMP',
+        terminal: 'T2',
+        scheduledArrivalMin: departureMin,
+        avgDelayMin: 3,
+        isDomestic: true,
+        boardingDeadlineMin: departureMin - 20,
+      };
+    }
+    return null;
   }
 
   async delayStats(_route: string): Promise<Distribution> {
