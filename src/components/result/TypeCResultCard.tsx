@@ -48,7 +48,7 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin, 
           <span className="text-3xl font-bold text-[#10315C]">
             <CountUpPct value={Math.round(recommended.result.probability * 100)} />
           </span>
-          <span className="ml-2 text-sm text-[#6B7482]">
+          <span className="ml-2 text-sm text-[#6B7482] whitespace-nowrap">
             추천 {recommended.train.trainNo} ({fmt(recommended.train.departureMin)} 출발)
           </span>
         </p>
@@ -76,17 +76,20 @@ export default function TypeCResultCard({ scenario, route, wishTimeMin, nowMin, 
                   isSelected ? 'btn-selected animate-micro-bounce' : 'hover:bg-[#E9F0FA]'
                 }`}
               >
-                <div className="flex items-baseline justify-between mb-1">
-                  <span className="font-semibold text-[#1A1D23]">
+                {/* 1줄: 열차번호+타입+배지 / 2줄: 시간구간+✓ — 좁은 화면에서 단어 중간 줄바꿈 방지 */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+                  <span className="font-semibold text-[#1A1D23] whitespace-nowrap">
                     {t.trainNo}{' '}
                     <span className="text-xs font-normal text-[#6B7482]">{t.trainType}</span>
-                    {isRec && (
-                      <span className="ml-2 text-xs font-medium text-white bg-[#10315C] rounded-full px-2 py-0.5">
-                        추천
-                      </span>
-                    )}
                   </span>
-                  <span className="text-sm text-[#6B7482]">
+                  {isRec && (
+                    <span className="whitespace-nowrap text-xs font-medium text-white bg-[#10315C] rounded-full px-2 py-0.5">
+                      추천
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm text-[#6B7482] whitespace-nowrap tabular-nums">
                     {fmt(t.departureMin)} → {fmt(t.arrivalMin)}
                   </span>
                   {isSelected && (

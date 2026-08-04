@@ -10,5 +10,6 @@ next-env.d.ts
 .omo/
 .playwright-mcp/
 *.png
+!docs/screenshots/**
 .vercel
 .env*

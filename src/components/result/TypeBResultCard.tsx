@@ -57,8 +57,8 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
         <div className={`relative rounded-[12px] border-2 px-4 py-3 ${!bestCity ? 'btn-selected animate-micro-bounce' : 'border-[#DCE2EA] bg-white'}`}>
           <p className="text-xs font-medium text-[#10315C]">인천공항에서 체크인</p>
           <p className="font-semibold text-[#1A1D23] mt-0.5">
-            {airportRec.train.trainNo}{' '}
-            <span className="text-xs font-normal text-[#6B7482]">({fmt(airportRec.train.departureMin)} 출발)</span>
+            <span className="whitespace-nowrap">{airportRec.train.trainNo}</span>{' '}
+            <span className="text-xs font-normal text-[#6B7482] whitespace-nowrap">({fmt(airportRec.train.departureMin)} 출발)</span>
           </p>
           <ProbabilityBar probability={airportRec.result.probability} />
           {!bestCity && (
@@ -68,8 +68,8 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
         <div className={`relative rounded-[12px] border-2 px-4 py-3 ${bestCity ? 'btn-selected animate-micro-bounce' : 'border-[#DCE2EA] bg-white'}`}>
           <p className="text-xs font-medium text-[#10315C]">도심공항터미널 사전 체크인</p>
           <p className="font-semibold text-[#1A1D23] mt-0.5">
-            {cityRec.train.trainNo}{' '}
-            <span className="text-xs font-normal text-[#6B7482]">({fmt(cityRec.train.departureMin)} 출발)</span>
+            <span className="whitespace-nowrap">{cityRec.train.trainNo}</span>{' '}
+            <span className="text-xs font-normal text-[#6B7482] whitespace-nowrap">({fmt(cityRec.train.departureMin)} 출발)</span>
           </p>
           <ProbabilityBar probability={cityRec.result.probability} />
           {bestCity && (
@@ -107,17 +107,20 @@ export default function TypeBResultCard({ scenarios, departureStation, deadlineM
                   isSelected ? 'btn-selected animate-micro-bounce' : 'hover:bg-[#E9F0FA]'
                 }`}
               >
-                <div className="flex items-baseline justify-between mb-1">
-                  <span className="font-semibold text-[#1A1D23]">
+                {/* 1줄: 열차번호+타입+배지 / 2줄: 시간구간+✓ — 좁은 화면에서 단어 중간 줄바꿈 방지 */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+                  <span className="font-semibold text-[#1A1D23] whitespace-nowrap">
                     {t.trainNo}{' '}
                     <span className="text-xs font-normal text-[#6B7482]">{t.trainType}</span>
-                    {isRec && (
-                      <span className="ml-2 text-xs font-medium text-white bg-[#10315C] rounded-full px-2 py-0.5">
-                        추천
-                      </span>
-                    )}
                   </span>
-                  <span className="text-sm text-[#6B7482]">
+                  {isRec && (
+                    <span className="whitespace-nowrap text-xs font-medium text-white bg-[#10315C] rounded-full px-2 py-0.5">
+                      추천
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm text-[#6B7482] whitespace-nowrap tabular-nums">
                     {fmt(t.departureMin)} → {fmt(t.arrivalMin)}
                   </span>
                   {isSelected && (

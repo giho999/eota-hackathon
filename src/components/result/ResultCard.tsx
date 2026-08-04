@@ -102,8 +102,8 @@ export default function ResultCard({
                 {displayLabel}
               </p>
               <p className="font-semibold text-[#1A1D23] mt-0.5">
-                {tr.train.trainNo}{' '}
-                <span className="text-xs font-normal text-[#6B7482]">
+                <span className="whitespace-nowrap">{tr.train.trainNo}</span>{' '}
+                <span className="text-xs font-normal text-[#6B7482] whitespace-nowrap">
                   ({fmt(tr.train.departureMin)} 출발)
                 </span>
                 {isSelected && <span className="inline-block ml-1 animate-pop">✓</span>}
@@ -150,21 +150,24 @@ export default function ResultCard({
                     : 'hover:bg-[#E9F0FA]'
                 }`}
               >
-                <div className="flex items-baseline justify-between mb-1">
-                  <span className="font-semibold text-[#1A1D23]">
+                {/* 1줄: 열차번호+타입+배지 / 2줄: 시간구간+✓ — 좁은 화면에서 단어 중간 줄바꿈 방지 */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+                  <span className="font-semibold text-[#1A1D23] whitespace-nowrap">
                     {t.trainNo}{' '}
                     <span className="text-xs font-normal text-[#6B7482]">{t.trainType}</span>
-                    {badge && (
-                      <span
-                        className={`ml-2 text-xs font-medium rounded-full px-2 py-0.5 ${
-                          tightLow ? 'text-[#6B7482] bg-[#DCE2EA]' : 'text-white bg-[#10315C]'
-                        }`}
-                      >
-                        {badge}
-                      </span>
-                    )}
                   </span>
-                  <span className="text-sm text-[#6B7482]">
+                  {badge && (
+                    <span
+                      className={`whitespace-nowrap text-xs font-medium rounded-full px-2 py-0.5 ${
+                        tightLow ? 'text-[#6B7482] bg-[#DCE2EA]' : 'text-white bg-[#10315C]'
+                      }`}
+                    >
+                      {badge}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm text-[#6B7482] whitespace-nowrap tabular-nums">
                     {fmt(t.departureMin)} → {fmt(t.arrivalMin)}
                   </span>
                   {isSelected && (
