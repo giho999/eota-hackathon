@@ -3,6 +3,16 @@ import { PARAMS } from '@/lib/engine';
 import type { FlightAdapter, FlightInfo } from '../types';
 
 // ponytail: 고정값 mock. 실데이터(Phase 3) 전까지 데모 흐름 검증용.
+// 기준 시각이 심야(00:00~05:00)면 당일 05:00으로 보정 — 새벽 출발/도착 편성 방지.
+const MIN_PER_DAY = 1440;
+const DAY_START = 5 * 60;
+
+function demoBase(): number {
+  const now = Math.floor(Date.now() / 60000);
+  const inDay = ((now % MIN_PER_DAY) + MIN_PER_DAY) % MIN_PER_DAY;
+  return inDay < DAY_START ? now - inDay + DAY_START : now;
+}
+
 export class MockFlightAdapter implements FlightAdapter {
   async lookup(flightNo: string, _date?: string): Promise<FlightInfo | null> {
     if (flightNo.toUpperCase() !== 'KE1234') return null;
@@ -11,16 +21,16 @@ export class MockFlightAdapter implements FlightAdapter {
       airline: '대한항공',
       origin: 'BKK',
       terminal: 'T1',
-      scheduledArrivalMin: Math.floor(Date.now() / 60000) + 90,
+      scheduledArrivalMin: demoBase() + 90,
       avgDelayMin: 12,
       isDomestic: false,
     };
   }
 
-  // 유형 B mock: OZ301 출국편. 지금+3시간 출발, 마감 = 출발−40분.
+  // 유형 B mock: OZ301 출국편. 기준+3시간 출발, 마감 = 출발−40분.
   async lookupDeparture(flightNo: string, _date?: string): Promise<FlightInfo | null> {
     if (flightNo.toUpperCase() === 'OZ301') {
-      const departureMin = Math.floor(Date.now() / 60000) + 180;
+      const departureMin = demoBase() + 180;
       return {
         flightNo: 'OZ301',
         airline: '아시아나항공',
@@ -34,7 +44,7 @@ export class MockFlightAdapter implements FlightAdapter {
     }
     // 유형 B 국내선 mock: KE8001 김포행. isDomestic: true → 여권 카드 생략 + 탑승마감 20분.
     if (flightNo.toUpperCase() === 'KE8001') {
-      const departureMin = Math.floor(Date.now() / 60000) + 120;
+      const departureMin = demoBase() + 120;
       return {
         flightNo: 'KE8001',
         airline: '대한항공',

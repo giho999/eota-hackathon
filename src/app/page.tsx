@@ -19,13 +19,18 @@ import TypeCResultCard from '@/components/result/TypeCResultCard';
 import InterestCard from '@/components/tour/InterestCard';
 import TourListCard from '@/components/tour/TourListCard';
 import type { ScenarioResult, TypeBScenario, TypeCScenario, TrainResult } from '@/lib/chat/result';
-import { SCENARIOS, bestTrain, computeTypeAResults, computeTypeBResults, computeTypeCResults, recommendTrain, recommendTrainB, recommendTrainC } from '@/lib/chat/result';
+import { SCENARIOS, bestTrain, computeTypeAResults, computeTypeBResults, computeTypeCResults, recommendTrain, recommendTrainB, recommendTrainC, rolloverPast, typeBSearchAfter } from '@/lib/chat/result';
 import { EMPTY_SLOTS, type ChatSlots, type JourneyType } from '@/lib/chat/slots';
 import { cardsFor, estimateDepartureMinutes, estimateExitMinutes } from '@/lib/chat/flow';
+import { injectDemoNowFromQuery, nowMin } from '@/lib/chat/demoNow';
 import { fitCourses, type BudgetedCourse } from '@/lib/tour/budget';
 import type { FlightInfo, TourCategory, TourSpot, TrainOption } from '@/lib/adapters';
 
 export default function Home() {
+  // 데모 기준 시각 주입: ?now=ISO (발표용 시나리오 고정). 클라이언트 렌더링 전에 적용.
+  injectDemoNowFromQuery(
+    typeof window !== 'undefined' ? window.location.search : '',
+  );
   const [slots, setSlots] = useState<ChatSlots>(EMPTY_SLOTS);
   const [flightInfo, setFlightInfo] = useState<FlightInfo | null>(null);
   const [cards, setCards] = useState<string[]>([]);
@@ -104,7 +109,10 @@ export default function Home() {
       const tr = typeBResults?.find((s) => s.trains.some((t) => t.train.trainNo === trainNo))
         ?.trains.find((t) => t.train.trainNo === trainNo);
       if (tr) {
-        const deadline = flightInfo?.boardingDeadlineMin ?? (flightInfo ? flightInfo.scheduledArrivalMin - 40 : 0);
+        const deadline = rolloverPast(
+          flightInfo?.boardingDeadlineMin ?? (flightInfo ? flightInfo.scheduledArrivalMin - 40 : 0),
+          nowMin(),
+        );
         const last = tr.result.timeline[tr.result.timeline.length - 1]?.cumulativeMin ?? tr.train.departureMin;
         finalizeSlack(Math.round(deadline - last), tr.train.trainNo, tr.train.from ?? slots.departureStation ?? '서울역');
       }
@@ -215,8 +223,12 @@ export default function Home() {
     setLoading(true);
     try {
       const station = slots.departureStation;
-      const deadline = flight.boardingDeadlineMin ?? flight.scheduledArrivalMin - 40;
-      const after = Math.floor(Date.now() / 60000);
+      const deadlineRaw = flight.boardingDeadlineMin ?? flight.scheduledArrivalMin - 40;
+      // 자정 경계: 탑승마감이 이미 지난 시각이면 익일로 롤오버하고,
+      // 열차 검색을 마감 3시간 전부터 역산 시작 (열차가 항상 마감 이전에 편성되게)
+      const currentNow = nowMin();
+      const deadline = rolloverPast(deadlineRaw, currentNow);
+      const after = typeBSearchAfter(deadline, currentNow);
       const res = await fetch(
         `/api/train?from=${encodeURIComponent(station)}&to=${encodeURIComponent('서울역')}&after=${after}`,
       );
@@ -249,7 +261,7 @@ export default function Home() {
         `/api/train?from=${encodeURIComponent(route.from)}&to=${encodeURIComponent(route.to)}&after=${wishTimeMin - 120}`,
       );
       const options = (await res.json()) as TrainOption[];
-      const scenario = computeTypeCResults(Math.floor(Date.now() / 60000), options);
+      const scenario = computeTypeCResults(nowMin(), options);
       setTypeCResult(scenario);
       const rec = recommendTrainC(scenario);
       if (rec) finalizeSlack(slackOf(rec), rec.train.trainNo, rec.train.from ?? route.from);
@@ -458,7 +470,7 @@ export default function Home() {
             scenario={typeCResult}
             route={slots.route}
             wishTimeMin={slots.wishTimeMin}
-            nowMin={Math.floor(Date.now() / 60000)}
+            nowMin={nowMin()}
             onSelectTrain={handleSelectTrain}
           />
         )}

@@ -2,6 +2,24 @@ import type { FlightInfo, TrainOption } from '@/lib/adapters';
 import { simulate, type SimulationResult } from '@/lib/engine';
 import { buildTypeASegments, buildTypeBSegments, buildTypeCSegments, type Transport } from './flow';
 
+// ── 시각 유틸 (epoch 분) ──
+const MIN_PER_DAY = 1440;
+
+/** 기준 시각(nowMin)보다 이른 시각은 다음 날로 롤오버.
+ *  자정 경계에서 "탑승마감 08:25"가 당일(이미 지남)로 파싱되어
+ *  열차 출발(익일)보다 이르게 되어 확률이 0%로 떨어지는 버그 방지. */
+export function rolloverPast(epochMin: number, nowMin: number): number {
+  if (epochMin <= nowMin) return epochMin + MIN_PER_DAY;
+  return epochMin;
+}
+
+/** 유형 B 역산: 탑승마감 기준으로 열차 검색 시작 시각(역산 버퍼 150분) 계산.
+ *  열차가 마감 2시간 30분 전부터 편성되도록 해, 공항 체크인 분기(70~80%)와
+ *  도심공항터미널 분기(90~100%)의 확률 차이가 데모에서 보이게 한다. */
+export function typeBSearchAfter(deadlineMin: number, nowMin: number): number {
+  return rolloverPast(deadlineMin, nowMin) - 150;
+}
+
 export interface ScenarioConfig {
   id: string;
   label: string;
