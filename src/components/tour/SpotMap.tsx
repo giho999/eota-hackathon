@@ -21,7 +21,9 @@ function loadKakaoSdk(): Promise<void> {
   sdkPromise = new Promise((resolve, reject) => {
     if (typeof window === 'undefined') return reject(new Error('browser only'));
     const script = document.createElement('script');
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&autoload=false`;
+    // https 강제: //dapi... 프로토콜 상대 URL은 http 페이지(localhost)에서 http로 해석되어
+    // 카카오가 https 전용으로 차단(응답 0, transferSize 0) → window.kakao 미정의 → 지도 미표시
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&autoload=false`;
     script.async = true;
     script.onload = () => {
       if (!window.kakao?.maps) return reject(new Error('kakao.maps 로드 실패'));
@@ -125,7 +127,13 @@ export default function SpotMap({ spots, center }: SpotMapProps) {
     if (level > MAX_LEVEL) map.setLevel(MAX_LEVEL);
   }
 
-  if (!KAKAO_KEY) return null; // 키 없음 → 리스트만 (폴백)
-  if (failed) return null;     // SDK 로드 실패 → 리스트만 (폴백)
+  // 키 없음/SDK 로드 실패: 지도 대신 안내 표시 — 리스트는 그대로 동작 (§2-4 폴백)
+  if (!KAKAO_KEY || failed) {
+    return (
+      <div className="h-40 w-full rounded-[12px] border border-[#DCE2EA] bg-[#F3F5F8] flex items-center justify-center">
+        <p className="text-sm text-[#6B7482]">지도를 불러올 수 없어요. 코스 목록은 아래에서 확인할 수 있어요.</p>
+      </div>
+    );
+  }
   return <div ref={containerRef} className="h-56 w-full rounded-[12px] overflow-hidden" />;
 }
