@@ -11,5 +11,7 @@ next-env.d.ts
 .playwright-mcp/
 *.png
 !docs/screenshots/**
+!eota-qr.png
 .vercel
 .env*
+!.env.example
